@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'application' // เพิ่ม plugin สำหรับรันโปรแกรม
+    id 'org.openjfx.javafxplugin' version '0.1.0' // เพิ่ม plugin ของ JavaFX
 }
 
 group = 'progmeth_2025_1'
@@ -7,6 +9,12 @@ version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+}
+
+// กำหนดเวอร์ชันและโมดูลของ JavaFX ที่ต้องใช้
+javafx {
+    version = "17" // สามารถเปลี่ยนเป็น 21 ได้ถ้าใช้ JDK 21
+    modules = [ 'javafx.controls', 'javafx.graphics' ]
 }
 
 dependencies {
@@ -17,4 +25,9 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+// กำหนดคลาสหลัก (Main Class) เพื่อให้รันผ่าน Gradle ได้
+application {
+    mainClass = 'application.Main'
 }
