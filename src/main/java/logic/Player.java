@@ -1,37 +1,67 @@
 package logic;
 
-public abstract class Player extends Entity {
-    protected int hp;
-    protected int maxHp;
-    protected double attackRadius;
-    protected int attackCooldown;
-    protected int maxCooldown;
+import java.util.ArrayList;
+import java.util.List;
 
-    public Player(double x, double y, double speed, String imagePath, int maxHp, double attackRadius, int maxCooldown) {
+public abstract class Player extends Entity {
+    protected int hp, maxHp;
+    protected double attackRadius;
+
+    // ระบบ EXP และ Level
+    protected int exp = 0;
+    protected int maxExp = 20;
+    protected int level = 1;
+    protected boolean pendingLevelUp = false;
+    // ทิศทางการหันหน้า (ซ้าย/ขวา) สำหรับอาวุธบางชนิด
+    protected boolean facingRight = true;
+
+    // ลิสต์เก็บอาวุธทั้งหมดที่มี
+    protected List<Weapon> weapons = new ArrayList<>();
+
+    public Player(double x, double y, double speed, String imagePath, int maxHp, double attackRadius) {
         super(x, y, speed, imagePath);
         this.maxHp = maxHp;
         this.hp = maxHp;
         this.attackRadius = attackRadius;
-        this.maxCooldown = maxCooldown;
-        this.attackCooldown = 0;
     }
+
+    public void addWeapon(Weapon w) {
+        this.weapons.add(w);
+    }
+
+    public List<Weapon> getWeapons() { return weapons; }
 
     public void move(boolean up, boolean down, boolean left, boolean right, double screenWidth, double screenHeight) {
         if (up && y > 0) y -= speed;
         if (down && y < screenHeight) y += speed;
-        if (left && x > 0) x -= speed;
-        if (right && x < screenWidth) x += speed;
+        if (left && x > 0) { x -= speed; facingRight = false; }
+        if (right && x < screenWidth) { x += speed; facingRight = true; }
     }
 
     @Override
     public void update() {
-        if (attackCooldown > 0) attackCooldown--;
+        // ให้ GamePane อัปเดตอาวุธแทน
     }
 
-    public boolean canAttack() { return attackCooldown <= 0; }
-    public void resetCooldown() { this.attackCooldown = maxCooldown; }
-    public double getAttackRadius() { return attackRadius; }
+    // เมื่อเก็บเม็ด EXP
+    public void gainExp(int amount) {
+        exp += amount;
+        if (exp >= maxExp) {
+            exp -= maxExp;
+            level++;
+            maxExp += 20;
+            pendingLevelUp = true; // เมื่อเลเวลถึง ให้รอเลือกอาวุธ
+        }
+    }
+    public boolean hasPendingLevelUp() { return pendingLevelUp; }
+    public void clearPendingLevelUp() { pendingLevelUp = false; }
+
+
     public int getHp() { return hp; }
+    public int getExp() { return exp; }
+    public int getMaxExp() { return maxExp; }
+    public int getLevel() { return level; }
+    public boolean isFacingRight() { return facingRight; }
 
     public void takeDamage(int damage) {
         this.hp -= damage;
