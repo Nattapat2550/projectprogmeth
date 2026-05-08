@@ -1,0 +1,250 @@
+@startuml
+class logic.SoundManager {
+- {static} MediaPlayer bgmPlayer
+- {static} Map<String,AudioClip> sfxCache
+- {static} Map<String,Long> lastPlayed
++ {static} void playBGM(String)
++ {static} void playSFX(String)
++ {static} void stopBGM()
+}
+
+
+class entity.weapon.FireWand {
++ void fire(Player,List<Enemy>,List<Projectile>)
+}
+
+abstract class entity.base.Entity {
+# double x
+# double speed
+# Image image
+# boolean isDead
++ {abstract}void update()
++ double getX()
++ double getY()
++ boolean isDead()
++ void setDead(boolean)
+}
+
+
+class entity.item.Potion {
++ void collect(Player)
++ void update()
++ void draw(GraphicsContext)
+}
+
+class entity.character.Ninja {
+}
+class gui.GamePane {
+- Canvas canvas
+- GraphicsContext gc
+- boolean running
+- Image bgImage
+- Stage stage
+- boolean up
+- GameLogic gameLogic
+- void pauseGame()
++ void setupInput(Scene)
++ void startGameLoop()
+- void showWeaponSelection()
+- VBox createSelectCard(String,String,Image,Runnable,VBox)
+- void drawGame()
+}
+
+
+class entity.character.Mage {
+}
+class entity.character.Knight {
+}
+interface entity.base.ICollectable {
+~ void collect(Player)
+~ double getX()
+~ double getY()
+}
+
+class entity.weapon.Garlic {
++ void fire(Player,List<Enemy>,List<Projectile>)
++ void draw(GraphicsContext,Player)
+}
+
+class application.Main {
++ void start(Stage)
++ {static} void main(String[])
+}
+
+class gui.StageSelectionPane {
+- VBox createStageCard(String,String,Stage)
+}
+
+class entity.projectile.Projectile {
+- double dx
+- int life
++ int damage
+- int type
+- Player owner
+- double angle
++ void update()
++ void draw(GraphicsContext)
+}
+
+
+interface entity.base.Renderable {
+~ void draw(GraphicsContext)
+}
+
+class gui.StartPane {
++ {static} String selectedChar
++ {static} String selectedStage
+}
+
+class entity.weapon.Axe {
++ void fire(Player,List<Enemy>,List<Projectile>)
+}
+
+class logic.GameLogic {
+- Player player
+- List<Enemy> enemies
+- List<ICollectable> items
+- List<Projectile> projectiles
+- int spawnTimer
++ void update(boolean,boolean,boolean,boolean)
++ Player getPlayer()
++ List<Enemy> getEnemies()
++ List<ICollectable> getItems()
++ List<Projectile> getProjectiles()
+}
+
+
+class gui.CharacterSelectionPane {
+- VBox createCharCard(String,String,String,String,String,Stage)
+}
+
+abstract class entity.character.Player {
+# int hp
+# double attackRadius
+# boolean pendingLevelUp
+# List<Weapon> weapons
++ int MAX_WEAPON_SLOTS
+# Image image1
+# boolean isWalking
+# int walkTimer
++ void addOrUpgradeWeapon(Weapon)
++ void heal(int)
++ void increaseMaxHp(int)
++ void gainExp(int)
++ void takeDamage(int)
++ void move(boolean,boolean,boolean,boolean,double,double)
++ void update()
++ void draw(GraphicsContext)
++ boolean hasPendingLevelUp()
++ void clearPendingLevelUp()
++ int getHp()
++ int getMaxHp()
++ int getExp()
++ int getMaxExp()
++ int getLevel()
++ boolean isFacingRight()
++ List<Weapon> getWeapons()
+}
+
+
+class entity.weapon.MagicWand {
++ void fire(Player,List<Enemy>,List<Projectile>)
+}
+
+class entity.weapon.KingBible {
++ void fire(Player,List<Enemy>,List<Projectile>)
+}
+
+class entity.weapon.Knife {
++ void fire(Player,List<Enemy>,List<Projectile>)
+}
+
+class entity.weapon.Whip {
+- int drawTimer
++ void fire(Player,List<Enemy>,List<Projectile>)
++ void draw(GraphicsContext,Player)
+}
+
+
+class entity.character.Bat {
+}
+class application.Launcher {
++ {static} void main(String[])
+}
+
+class entity.item.ExpGem {
+- int expValue
++ void collect(Player)
++ void update()
++ void draw(GraphicsContext)
+}
+
+
+class entity.weapon.Cross {
++ void fire(Player,List<Enemy>,List<Projectile>)
+}
+
+class logic.GameConfig {
++ {static} double MAP_WIDTH
++ {static} double MAP_HEIGHT
++ {static} int ENEMY_SPAWN_INTERVAL
+}
+
+abstract class entity.character.Enemy {
+# Player target
+# int hp
+# boolean facingRight
++ void takeDamage(int)
++ void update()
++ void draw(GraphicsContext)
+}
+
+
+class entity.character.Ghost {
+}
+class entity.character.Zombie {
+}
+abstract class entity.weapon.Weapon {
+# int cooldown
+# String imageName
+# Image image
++ void levelUp()
++ int getLevel()
++ String getImageName()
++ Image getImage()
++ {abstract}void fire(Player,List<Enemy>,List<Projectile>)
++ void update(Player,List<Enemy>,List<Projectile>)
++ void draw(GraphicsContext,Player)
+}
+
+
+
+
+entity.weapon.Weapon <|-- entity.weapon.FireWand
+entity.base.Renderable <|.. entity.base.Entity
+entity.base.ICollectable <|.. entity.item.Potion
+entity.base.Entity <|-- entity.item.Potion
+entity.character.Player <|-- entity.character.Ninja
+javafx.scene.layout.Pane <|-- gui.GamePane
+entity.character.Player <|-- entity.character.Mage
+entity.character.Player <|-- entity.character.Knight
+entity.weapon.Weapon <|-- entity.weapon.Garlic
+javafx.application.Application <|-- application.Main
+javafx.scene.layout.VBox <|-- gui.StageSelectionPane
+entity.base.Entity <|-- entity.projectile.Projectile
+javafx.scene.layout.VBox <|-- gui.StartPane
+entity.weapon.Weapon <|-- entity.weapon.Axe
+javafx.scene.layout.VBox <|-- gui.CharacterSelectionPane
+entity.base.Entity <|-- entity.character.Player
+entity.weapon.Weapon <|-- entity.weapon.MagicWand
+entity.weapon.Weapon <|-- entity.weapon.KingBible
+entity.weapon.Weapon <|-- entity.weapon.Knife
+entity.weapon.Weapon <|-- entity.weapon.Whip
+entity.character.Enemy <|-- entity.character.Bat
+entity.base.ICollectable <|.. entity.item.ExpGem
+entity.base.Entity <|-- entity.item.ExpGem
+entity.weapon.Weapon <|-- entity.weapon.Cross
+entity.base.Entity <|-- entity.character.Enemy
+entity.character.Enemy <|-- entity.character.Ghost
+entity.character.Enemy <|-- entity.character.Zombie
+@enduml
