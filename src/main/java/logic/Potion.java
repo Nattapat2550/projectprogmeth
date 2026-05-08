@@ -5,20 +5,31 @@ import javafx.scene.paint.Color;
 
 /**
  * คลาส Potion (ขวดยาเพิ่มเลือด)
- * ดรอปจากศัตรู เมื่อผู้เล่นเดินไปเก็บจะช่วยฟื้นฟู HP
+ * เป็นไอเทมที่ดรอปจากศัตรู เมื่อผู้เล่นเดินไปเก็บจะช่วยฟื้นฟู HP
  */
 public class Potion extends Entity {
 
+    /**
+     * สร้างขวดยาที่พิกัดที่ระบุ
+     * @param x ตำแหน่งแกน X
+     * @param y ตำแหน่งแกน Y
+     */
     public Potion(double x, double y) {
         // ส่งค่าไปให้ Entity (x, y, speed=0, ชื่อไฟล์รูปภาพ)
         super(x, y, 0, "potion.png");
     }
 
+    /**
+     * อัปเดตตรรกะของขวดยา (ขวดยาตกอยู่บนพื้นนิ่งๆ ไม่ต้องขยับ)
+     */
     @Override
     public void update() {
-        // ขวดยาตกอยู่บนพื้นนิ่งๆ ไม่ต้องขยับ
     }
 
+    /**
+     * วาดรูปขวดยาลงบนหน้าจอ
+     * @param gc กราฟิกคอนเท็กซ์ (GraphicsContext)
+     */
     @Override
     public void draw(GraphicsContext gc) {
         if (image != null) {

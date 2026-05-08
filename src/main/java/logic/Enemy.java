@@ -1,58 +1,76 @@
 package logic;
 
+import javafx.scene.canvas.GraphicsContext;
+
 /**
- * คลาส Enemy เป็นตัวแทนของศัตรูภายในเกม
- * สืบทอดมาจาก Entity โดยมีการระบุเป้าหมาย (Player) ที่มันจะเดินตามไปโจมตี
+ * คลาสนามธรรมที่เป็นต้นแบบของศัตรูทุกประเภทในเกม
+ * จัดการเรื่องการไล่ตามผู้เล่นและการคำนวณความเสียหาย
  */
-public class Enemy extends Entity {
-    private Player target;
-    private int hp;
+public abstract class Enemy extends Entity {
+    protected Player target;
+    protected int hp;
+    protected boolean facingRight = true;
 
     /**
-     * คอนสตรัคเตอร์สำหรับสร้างศัตรู
-     * * @param x ตำแหน่งเริ่มต้นในแกน X
-     * @param y ตำแหน่งเริ่มต้นในแกน Y
-     * @param target ผู้เล่นที่ศัตรูต้องเดินตาม
+     * สร้างศัตรูพร้อมกำหนดเป้าหมายในการโจมตี
+     * @param x ตำแหน่ง X เริ่มต้น
+     * @param y ตำแหน่ง Y เริ่มต้น
+     * @param speed ความเร็วในการเคลื่อนที่
+     * @param imageName ชื่อไฟล์รูปภาพศัตรู
+     * @param hp พลังชีวิตเริ่มต้น
+     * @param target ตัวละครผู้เล่นที่ศัตรูจะเดินตาม
      */
-    public Enemy(double x, double y, Player target) {
-        super(x, y, 1.5, "enemy.png");
+    public Enemy(double x, double y, double speed, String imageName, int hp, Player target) {
+        super(x, y, speed, imageName);
         this.target = target;
-        this.hp = 30; // ตั้งค่าเลือดเริ่มต้นของศัตรู
+        this.hp = hp;
     }
 
     /**
-     * รับความเสียหายจากอาวุธของผู้เล่น
-     * * @param damage จำนวนความเสียหายที่ศัตรูได้รับ
+     * ลดพลังชีวิตของศัตรู และตรวจสอบสถานะการตาย
+     * @param damage ปริมาณความเสียหายที่ได้รับ
      */
     public void takeDamage(int damage) {
         this.hp -= damage;
-        if (this.hp <= 0) {
+        if (this.hp <= 0) this.isDead = true;
+    }
+
+    /**
+     * คำนวณทิศทางเพื่อเดินเข้าหาผู้เล่นและตรวจสอบการชน
+     * จะอัปเดตตำแหน่ง x, y ของศัตรูให้เคลื่อนที่เข้าหาเป้าหมาย
+     */
+    @Override
+    public void update() {
+        if (target == null || target.isDead()) return;
+        double dx = target.getX() - x;
+        double dy = target.getY() - y;
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance > 0) {
+            x += (dx / distance) * speed;
+            y += (dy / distance) * speed;
+        }
+        if (dx > 0) facingRight = true;
+        else if (dx < 0) facingRight = false;
+
+        // หากศัตรูเข้าใกล้ผู้เล่นมากพอ จะทำการโจมตีและตาย
+        if (distance < 20) {
+            target.takeDamage(10);
             this.isDead = true;
         }
     }
 
     /**
-     * อัปเดตพฤติกรรมของศัตรูในแต่ละเฟรม (คำนวณการเดินเข้าหาผู้เล่นและทำดาเมจ)
+     * วาดรูปศัตรูลงบนหน้าจอ โดยมีการพลิกด้านตามทิศทางที่เดิน
+     * @param gc กราฟิกคอนเท็กซ์ (GraphicsContext)
      */
     @Override
-    public void update() {
-        if (target == null || target.isDead()) return;
-
-        // คำนวณระยะห่างระหว่างศัตรูกับผู้เล่น
-        double dx = target.getX() - this.x;
-        double dy = target.getY() - this.y;
-        double distance = Math.sqrt(dx * dx + dy * dy);
-
-        // เดินตาม Player
-        if (distance > 0) {
-            this.x += (dx / distance) * speed;
-            this.y += (dy / distance) * speed;
-        }
-
-        // ถ้าชน Player ให้ทำดาเมจ
-        if (distance < 20) {
-            target.takeDamage(10);
-            this.isDead = true; // ชนแล้วตายไปพร้อมกันเลยเพื่อป้องกันการชนรัวๆ
+    public void draw(GraphicsContext gc) {
+        if (image != null) {
+            gc.save();
+            gc.translate(x, y);
+            if (!facingRight) gc.scale(-1, 1);
+            gc.drawImage(image, -20, -20, 40, 40);
+            gc.restore();
         }
     }
 }

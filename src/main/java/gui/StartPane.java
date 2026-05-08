@@ -1,53 +1,76 @@
 package gui;
 
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+/**
+ * คลาส StartPane หน้าจอหลักหน้าแรกเมื่อเข้าเกม (หน้าจอ Title)
+ * ทำหน้าที่เป็นศูนย์กลางในการเก็บค่าการตั้งค่า และนำทางไปยังหน้าจอเลือกต่างๆ
+ */
 public class StartPane extends VBox {
 
+    // ตัวแปรแบบ static เพื่อจดจำค่าที่ผู้เล่นเลือกไว้แม้จะเปลี่ยนหน้าต่าง
+    public static String selectedChar = "knight";
+    public static String selectedStage = "bg.png";
+
+    /**
+     * คอนสตรักเตอร์สร้างหน้าจอเริ่มเกม
+     * @param primaryStage หน้าต่างหลักของโปรแกรม
+     */
     public StartPane(Stage primaryStage) {
         this.setAlignment(Pos.CENTER);
         this.setSpacing(30);
-        this.setStyle("-fx-background-color: #222;");
+        this.setStyle("-fx-background-color: #111;");
 
-        Label title = new Label("SELECT YOUR CHARACTER");
-        title.setFont(new Font("Arial", 40));
-        title.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+        // หัวข้อเกม
+        Label title = new Label("VAMPIRE SURVIVORS");
+        title.setFont(new Font("Arial Bold", 50));
+        title.setTextFill(Color.RED);
 
-        HBox charSelection = new HBox(20);
-        charSelection.setAlignment(Pos.CENTER);
+        // ปุ่มไปหน้าเลือกตัวละคร (แสดงค่าที่เลือกอยู่ปัจจุบัน)
+        Button charBtn = new Button("SELECT CHARACTER : " + selectedChar.toUpperCase());
+        charBtn.setPrefSize(350, 50);
+        charBtn.setStyle("-fx-base: #333; -fx-text-fill: white; -fx-font-size: 16px; -fx-cursor: hand;");
+        charBtn.setOnAction(e -> {
+            primaryStage.getScene().setRoot(new CharacterSelectionPane(primaryStage));
+        });
 
-        Button knightBtn = createCharButton("KNIGHT (High HP)", "#555");
-        Button mageBtn = createCharButton("MAGE (Wide Attack)", "#555");
-        Button ninjaBtn = createCharButton("NINJA (Fast Move)", "#555");
+        // ปุ่มไปหน้าเลือกด่าน (แสดงค่าที่เลือกอยู่ปัจจุบัน)
+        Button stageBtn = new Button("SELECT STAGE : " + getStageName(selectedStage));
+        stageBtn.setPrefSize(350, 50);
+        stageBtn.setStyle("-fx-base: #333; -fx-text-fill: white; -fx-font-size: 16px; -fx-cursor: hand;");
+        stageBtn.setOnAction(e -> {
+            primaryStage.getScene().setRoot(new StageSelectionPane(primaryStage));
+        });
 
-        knightBtn.setOnAction(e -> startGame(primaryStage, "knight"));
-        mageBtn.setOnAction(e -> startGame(primaryStage, "mage"));
-        ninjaBtn.setOnAction(e -> startGame(primaryStage, "ninja"));
+        // ปุ่มเริ่มเกม
+        Button playBtn = new Button("ENTER THE NIGHT (START)");
+        playBtn.setPrefSize(350, 60);
+        playBtn.setStyle("-fx-base: #c0392b; -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-cursor: hand;");
+        playBtn.setOnAction(e -> {
+            GamePane gamePane = new GamePane(selectedChar, selectedStage, primaryStage);
+            primaryStage.getScene().setRoot(gamePane);
+            gamePane.setupInput(primaryStage.getScene());
+            gamePane.startGameLoop();
+        });
 
-        charSelection.getChildren().addAll(knightBtn, mageBtn, ninjaBtn);
-        this.getChildren().addAll(title, charSelection);
+        this.getChildren().addAll(title, charBtn, stageBtn, playBtn);
     }
 
-    private Button createCharButton(String name, String color) {
-        Button btn = new Button(name);
-        btn.setPrefSize(180, 100);
-        btn.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; -fx-font-size: 16px; -fx-cursor: hand;");
-        return btn;
-    }
-
-    private void startGame(Stage stage, String type) {
-        GamePane gamePane = new GamePane(type);
-        Scene gameScene = new Scene(gamePane, 800, 600);
-        gamePane.setupInput(gameScene);
-
-        stage.setScene(gameScene);
-        gamePane.startGameLoop();
+    /**
+     * ดึงชื่อด่านที่อ่านง่ายเพื่อนำมาแสดงผลบนปุ่ม
+     * @param file ชื่อไฟล์ของด่าน
+     * @return ชื่อด่านที่เป็นตัวพิมพ์ใหญ่
+     */
+    private String getStageName(String file) {
+        if (file.equals("bg.png")) return "FOREST";
+        if (file.equals("bgcave.png")) return "CAVE";
+        if (file.equals("bgchurch.png")) return "CHURCH";
+        return "UNKNOWN";
     }
 }
