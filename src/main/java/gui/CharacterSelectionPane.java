@@ -1,5 +1,4 @@
 package gui;
-
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -12,14 +11,14 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 /**
- * คลาส CharacterSelectionPane สำหรับสร้างหน้าจอเลือกตัวละคร
- * แสดงรูปภาพตัวละครและอาวุธเริ่มต้นแบบการ์ด
+ * หน้าจอ GUI สำหรับเลือกตัวละคร
+ * แสดงผลเป็นกล่องการ์ดโชว์รูปตัวละครและอาวุธเริ่มต้น
  */
 public class CharacterSelectionPane extends VBox {
 
     /**
-     * คอนสตรักเตอร์สร้างหน้าจอเลือกตัวละคร
-     * @param stage หน้าต่างหลักของแอปพลิเคชัน
+     * คอนสตรักเตอร์จัดโครงสร้างหน้าเลือกตัวละคร
+     * @param stage หน้าต่างแอปพลิเคชัน
      */
     public CharacterSelectionPane(Stage stage) {
         this.setAlignment(Pos.CENTER);
@@ -33,14 +32,14 @@ public class CharacterSelectionPane extends VBox {
         HBox charsBox = new HBox(30);
         charsBox.setAlignment(Pos.CENTER);
 
-        // สร้างการ์ดของแต่ละตัวละคร
-        VBox knightCard = createCharCard("KNIGHT", "knight", "knight1.png", "Knife", "knife.png", stage);
-        VBox mageCard = createCharCard("MAGE", "mage", "mage1.png", "Magic Wand", "magicwand.png", stage);
-        VBox ninjaCard = createCharCard("NINJA", "ninja", "ninja1.png", "Garlic", "garlic.png", stage);
+        // แอดการ์ดตัวละคร 3 ตัวลงจอ
+        charsBox.getChildren().addAll(
+                createCharCard("KNIGHT", "knight", "knight1.png", "Knife", "knife.png", stage),
+                createCharCard("MAGE", "mage", "mage1.png", "Magic Wand", "magicwand.png", stage),
+                createCharCard("NINJA", "ninja", "ninja1.png", "Garlic", "garlic.png", stage)
+        );
 
-        charsBox.getChildren().addAll(knightCard, mageCard, ninjaCard);
-
-        // ปุ่มกลับไปเมนูหลัก
+        // ปุ่มย้อนกลับ
         Button backBtn = new Button("BACK TO MENU");
         backBtn.setPrefSize(200, 50);
         backBtn.setStyle("-fx-base: #555; -fx-text-fill: white; -fx-font-size: 14px; -fx-cursor: hand;");
@@ -50,23 +49,21 @@ public class CharacterSelectionPane extends VBox {
     }
 
     /**
-     * สร้างการ์ดแสดงข้อมูลตัวละครและปุ่มเลือก
-     * @param titleName ชื่อตัวละครที่แสดงผล
-     * @param charType รหัสตัวละครสำหรับใช้งานในระบบ
-     * @param charImgFile ชื่อไฟล์รูปภาพตัวละคร
-     * @param wpnName ชื่ออาวุธที่แสดงผล
-     * @param wpnImgFile ชื่อไฟล์รูปภาพอาวุธ
-     * @param stage หน้าต่างหลัก (ใช้สำหรับเปลี่ยนฉาก)
-     * @return VBox ที่ประกอบไปด้วยข้อมูลการ์ดทั้งหมด
+     * สร้างกรอบรูปสี่เหลี่ยม (การ์ด) แสดงสถานะตัวละครหนึ่งตัว
+     * @param titleName ชื่อที่จะโชว์
+     * @param charType รหัสที่ระบบนำไปใช้งาน
+     * @param charImgFile ชื่อรูปตัวละคร
+     * @param wpnName ชื่ออาวุธ
+     * @param wpnImgFile ชื่อรูปอาวุธ
+     * @param stage อ้างอิงหน้าต่างเพื่อเด้งกลับไปเมนูหลัก
+     * @return VBox กรอบการ์ด GUI
      */
     private VBox createCharCard(String titleName, String charType, String charImgFile, String wpnName, String wpnImgFile, Stage stage) {
         VBox card = new VBox(15);
         card.setAlignment(Pos.CENTER);
 
-        // หากเป็นการ์ดที่กำลังเลือกอยู่ ให้แสดงกรอบสีเขียวทอง
-        boolean isSelected = StartPane.selectedChar.equals(charType);
-        String borderColor = isSelected ? "#f1c40f" : "#555";
-        card.setStyle("-fx-background-color: #333; -fx-padding: 20; -fx-background-radius: 10; -fx-border-color: " + borderColor + "; -fx-border-radius: 10; -fx-border-width: 3;");
+        boolean isSel = StartPane.selectedChar.equals(charType); // เช็คว่าตัวนี้โดนเลือกอยู่ไหม
+        card.setStyle("-fx-background-color: #333; -fx-padding: 20; -fx-background-radius: 10; -fx-border-color: " + (isSel ? "#f1c40f" : "#555") + "; -fx-border-radius: 10; -fx-border-width: 3;");
         card.setPrefSize(220, 320);
 
         Label nameLbl = new Label(titleName);
@@ -79,21 +76,18 @@ public class CharacterSelectionPane extends VBox {
 
         Label wpnLbl = new Label("Weapon: " + wpnName);
         wpnLbl.setTextFill(Color.LIGHTGRAY);
-        wpnLbl.setFont(new Font("Arial", 14));
 
         ImageView wpnView = new ImageView();
         try { wpnView.setImage(new Image(ClassLoader.getSystemResource("images/" + wpnImgFile).toString())); } catch(Exception e){}
         wpnView.setFitWidth(40); wpnView.setFitHeight(40);
 
-        Button selBtn = new Button(isSelected ? "SELECTED" : "SELECT");
+        Button selBtn = new Button(isSel ? "SELECTED" : "SELECT");
         selBtn.setPrefSize(120, 40);
-        selBtn.setStyle(isSelected ? "-fx-base: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;" : "-fx-base: #555; -fx-text-fill: white;");
-        selBtn.setDisable(isSelected); // ปิดปุ่มถ้าถูกเลือกอยู่แล้ว
+        selBtn.setStyle(isSel ? "-fx-base: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;" : "-fx-base: #555; -fx-text-fill: white;");
+        selBtn.setDisable(isSel); // ถ้าเลือกอยู่แล้ว ห้ามกดซ้ำ
 
-        selBtn.setOnAction(e -> {
-            StartPane.selectedChar = charType;
-            stage.getScene().setRoot(new StartPane(stage)); // กลับหน้าเมนูหลักอัตโนมัติ
-        });
+        // เมื่อกดเลือก อัปเดตค่า static ทั่วโลก แล้วโดดกลับไปเมนู
+        selBtn.setOnAction(e -> { StartPane.selectedChar = charType; stage.getScene().setRoot(new StartPane(stage)); });
 
         card.getChildren().addAll(nameLbl, charView, wpnLbl, wpnView, selBtn);
         return card;

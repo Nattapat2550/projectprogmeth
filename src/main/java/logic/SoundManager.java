@@ -1,5 +1,4 @@
 package logic;
-
 import javafx.scene.media.AudioClip;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -8,8 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * คลาสสำหรับจัดการระบบเสียงทั้งหมดในเกม (Background Music และ Sound Effects)
- * มีระบบ Cache และ Cooldown เพื่อป้องกันเสียงซ้อนและกระตุก
+ * คลาสบริหารจัดการระบบเสียงทั้งหมดของเกม (Sound Manager)
+ * ป้องกันปัญหาเสียงทับซ้อนกันเกินไป (Spamming) ด้วยระบบ Cooldown
  */
 public class SoundManager {
     private static MediaPlayer bgmPlayer;
@@ -17,8 +16,8 @@ public class SoundManager {
     private static Map<String, Long> lastPlayed = new HashMap<>();
 
     /**
-     * เล่นเพลงประกอบพื้นหลังแบบวนซ้ำ (MediaPlayer)
-     * @param fileName ชื่อไฟล์เพลงในโฟลเดอร์ sounds/
+     * เปิดเพลงพื้นหลังแบบลูป (BGM)
+     * @param fileName ชื่อไฟล์เสียง .mp3
      */
     public static void playBGM(String fileName) {
         try {
@@ -27,55 +26,39 @@ public class SoundManager {
                 if (bgmPlayer != null) bgmPlayer.stop();
                 bgmPlayer = new MediaPlayer(new Media(url.toExternalForm()));
                 bgmPlayer.setCycleCount(MediaPlayer.INDEFINITE);
-                bgmPlayer.setVolume(0.15); // ปรับความดัง BGM
+                bgmPlayer.setVolume(0.15); // ปรับเบาหน่อยไม่ให้กลบเอฟเฟกต์
                 bgmPlayer.play();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     /**
-     * เล่นเสียงเอฟเฟกต์แบบสั้น (AudioClip) พร้อมระบบลดความดังและป้องกันเสียงซ้อน
-     * @param fileName ชื่อไฟล์เสียงเอฟเฟกต์
+     * เล่นเสียงเอฟเฟกต์ (SFX) ครั้งเดียว (เช่น ตีโดน เก็บของ)
+     * มีระบบคูลดาวน์ป้องกันเสียงรัวจนลำโพงแตก
+     * @param fileName ชื่อไฟล์เสียง
      */
     public static void playSFX(String fileName) {
         long now = System.currentTimeMillis();
-
-        // กำหนด Cooldown: ถ้าเพิ่งเล่นเสียงนี้ไปใน 80ms ที่ผ่านมา ให้ข้ามไปเลยกันเสียงช็อต
-        if (lastPlayed.getOrDefault(fileName, 0L) + 80 > now) {
-            return;
-        }
+        // ดีเลย์ห่างกันอย่างน้อย 80ms ต่อเสียงชิ้นเดิม
+        if (lastPlayed.getOrDefault(fileName, 0L) + 80 > now) return;
 
         if (!sfxCache.containsKey(fileName)) {
             URL url = ClassLoader.getSystemResource("sounds/" + fileName);
-            if (url != null) {
-                sfxCache.put(fileName, new AudioClip(url.toExternalForm()));
-            }
+            if (url != null) sfxCache.put(fileName, new AudioClip(url.toExternalForm()));
         }
 
         AudioClip clip = sfxCache.get(fileName);
         if (clip != null) {
-            // ปรับระดับความดังแยกตามประเภทของเสียง
-            if (fileName.contains("hit")) {
-                clip.setVolume(0.05); // เสียงตีมอนสเตอร์ (เบาๆ)
-            } else if (fileName.contains("pickup")) {
-                clip.setVolume(0.4);  // เสียงเก็บของ
-            } else {
-                clip.setVolume(0.2);  // เสียงอื่นๆ ทั่วไป
-            }
+            // ปรับโวลุ่มตามประเภทเสียงอัตโนมัติ
+            if (fileName.contains("hit")) clip.setVolume(0.05);
+            else if (fileName.contains("pickup") || fileName.contains("heal")) clip.setVolume(0.4);
+            else clip.setVolume(0.2);
 
             clip.play();
-            lastPlayed.put(fileName, now); // บันทึกเวลาที่เล่นล่าสุด
+            lastPlayed.put(fileName, now);
         }
     }
 
-    /**
-     * หยุดเพลงประกอบพื้นหลังทั้งหมด
-     */
-    public static void stopBGM() {
-        if (bgmPlayer != null) {
-            bgmPlayer.stop();
-        }
-    }
+    /** หยุดเสียง BGM */
+    public static void stopBGM() { if (bgmPlayer != null) bgmPlayer.stop(); }
 }

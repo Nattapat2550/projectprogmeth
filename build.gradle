@@ -1,37 +1,87 @@
 plugins {
     id 'java'
-    id 'application' // เพิ่ม plugin สำหรับรันโปรแกรม
-    id 'org.openjfx.javafxplugin' version '0.1.0' // เพิ่ม plugin ของ JavaFX
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+    // 1. เพิ่มปลั๊กอิน Shadow สำหรับทำ Fat JAR (ใช้ goooler ที่แก้บัคแล้ว)
+    id 'io.github.goooler.shadow' version '8.1.7'
 }
 
 group = 'progmeth_2025_1'
-version = '1.0-SNAPSHOT'
+version = '1'
 
 repositories {
     mavenCentral()
 }
 
-// กำหนดเวอร์ชันและโมดูลของ JavaFX ที่ต้องใช้
-javafx {
-    version = "24.0.1" // สามารถเปลี่ยนเป็น 21 ได้ถ้าใช้ JDK 21
-    modules = [ 'javafx.controls', 'javafx.graphics' , 'javafx.media']
-}
-
 dependencies {
+    implementation 'org.openjfx:javafx-controls:24.0.1'
+    implementation 'org.openjfx:javafx-fxml:24.0.1'
+    implementation 'org.openjfx:javafx-web:24.0.1'
+    implementation 'org.openjfx:javafx-graphics:24.0.1'
+    implementation 'org.openjfx:javafx-media:24.0.1'
+    implementation 'org.openjfx:javafx-swing:24.0.1'
+
+    // TestFX dependencies
+    testImplementation 'org.testfx:testfx-core:4.0.17'
+    testImplementation 'org.testfx:testfx-junit5:4.0.17'
+    testImplementation 'org.hamcrest:hamcrest:2.2'
+
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+javafx {
+    version = '24.0.1'
+    modules = ['javafx.controls', 'javafx.fxml', 'javafx.graphics', 'javafx.media', 'javafx.web', 'javafx.swing']
+}
+
+application {
+    // 2. เปลี่ยนจุดรันโปรแกรมไปที่ Launcher เพื่อหลบกฎเหล็กของ JavaFX
+    mainClass = 'application.Launcher'
+}
+
+run {
+    standardInput = System.in
 }
 
 test {
     useJUnitPlatform()
+
+    // TestFX configuration for JavaFX 24
+    systemProperty 'testfx.robot', 'glass'
+    systemProperty 'testfx.setup.timeout', '60000'
+    systemProperty 'testfx.launch.timeout', '60000'
+
+    // Required JVM arguments for JavaFX 24
+    jvmArgs '--add-opens', 'javafx.graphics/com.sun.javafx.application=ALL-UNNAMED'
+    jvmArgs '--add-opens', 'javafx.graphics/com.sun.glass.ui=ALL-UNNAMED'
+    jvmArgs '--add-exports', 'javafx.graphics/com.sun.glass.ui=ALL-UNNAMED'
+    jvmArgs '--add-exports', 'javafx.base/com.sun.javafx.runtime=ALL-UNNAMED'
 }
 
-// กำหนดคลาสหลัก (Main Class) เพื่อให้รันผ่าน Gradle ได้
-application {
-    mainClass = 'application.Main'
+// โค้ดเดิมของอาจารย์ (เก็บไว้เพื่อให้อาจารย์ตรวจ Source code ได้)
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from sourceSets.main.output
+    from sourceSets.main.allSource
+    manifest {
+        attributes(
+                'Main-Class': application.mainClass.get()
+        )
+    }
+    archiveFileName = "${project.name}-${project.version}-with-sources.jar"
+}
 
-    applicationDefaultJvmArgs = [
-            '--enable-native-access=javafx.graphics,javafx.media,ALL-UNNAMED'
-    ]
+// 3. เพิ่มบล็อก shadowJar สำหรับสร้างไฟล์เกมที่รันได้จริง 100%
+shadowJar {
+    archiveBaseName.set(project.name)
+    archiveClassifier.set('playable')
+    archiveVersion.set(project.version.toString())
+
+    // ตั้งค่าให้ดึง JavaFX ลงมาแพ็กในไฟล์ด้วย
+    mergeServiceFiles()
+
+    manifest {
+        attributes 'Main-Class': 'application.Launcher'
+    }
 }
