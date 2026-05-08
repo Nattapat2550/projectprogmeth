@@ -4,19 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Player extends Entity {
-    protected int hp, maxHp;
+    protected int hp;
+    protected int maxHp;
     protected double attackRadius;
 
-    // ระบบ EXP และ Level
     protected int exp = 0;
     protected int maxExp = 20;
     protected int level = 1;
     protected boolean pendingLevelUp = false;
-    // ทิศทางการหันหน้า (ซ้าย/ขวา) สำหรับอาวุธบางชนิด
-    protected boolean facingRight = true;
 
-    // ลิสต์เก็บอาวุธทั้งหมดที่มี
+    protected boolean facingRight = true;
     protected List<Weapon> weapons = new ArrayList<>();
+
+    // ล็อกสล็อตอาวุธไว้ที่ 3 ชิ้นตามที่ขอครับ (ใช้ public final)
+    public final int MAX_WEAPON_SLOTS = 5;
 
     public Player(double x, double y, double speed, String imagePath, int maxHp, double attackRadius) {
         super(x, y, speed, imagePath);
@@ -25,11 +26,29 @@ public abstract class Player extends Entity {
         this.attackRadius = attackRadius;
     }
 
-    public void addWeapon(Weapon w) {
-        this.weapons.add(w);
+    // เมธอดสำหรับเพิ่มอาวุธใหม่ หรืออัปเกรดของเดิม
+    public void addOrUpgradeWeapon(Weapon newW) {
+        for (Weapon w : weapons) {
+            if (w.getClass().equals(newW.getClass())) {
+                w.levelUp(); // ถ้ามีอยู่แล้วให้อัปเลเวล
+                return;
+            }
+        }
+        if (weapons.size() < MAX_WEAPON_SLOTS) {
+            weapons.add(newW); // ถ้าช่องยังไม่เต็ม ให้เพิ่มชิ้นใหม่
+        }
     }
 
-    public List<Weapon> getWeapons() { return weapons; }
+    // ฟื้นฟูเลือด (ไม่ให้เกินหลอด)
+    public void heal(int amount) {
+        this.hp = Math.min(maxHp, this.hp + amount);
+    }
+
+    // เพิ่มหลอดเลือดสูงสุด (Max HP)
+    public void increaseMaxHp(int amount) {
+        this.maxHp += amount;
+        this.hp += amount;
+    }
 
     public void move(boolean up, boolean down, boolean left, boolean right, double screenWidth, double screenHeight) {
         if (up && y > 0) y -= speed;
@@ -39,29 +58,28 @@ public abstract class Player extends Entity {
     }
 
     @Override
-    public void update() {
-        // ให้ GamePane อัปเดตอาวุธแทน
-    }
+    public void update() {}
 
-    // เมื่อเก็บเม็ด EXP
     public void gainExp(int amount) {
         exp += amount;
         if (exp >= maxExp) {
             exp -= maxExp;
             level++;
             maxExp += 20;
-            pendingLevelUp = true; // เมื่อเลเวลถึง ให้รอเลือกอาวุธ
+            pendingLevelUp = true;
         }
     }
+
     public boolean hasPendingLevelUp() { return pendingLevelUp; }
     public void clearPendingLevelUp() { pendingLevelUp = false; }
 
-
     public int getHp() { return hp; }
+    public int getMaxHp() { return maxHp; }
     public int getExp() { return exp; }
     public int getMaxExp() { return maxExp; }
     public int getLevel() { return level; }
     public boolean isFacingRight() { return facingRight; }
+    public List<Weapon> getWeapons() { return weapons; }
 
     public void takeDamage(int damage) {
         this.hp -= damage;

@@ -11,10 +11,9 @@ public class Garlic extends Weapon {
     }
     @Override
     public void draw(GraphicsContext gc, Player p) {
-        if (image != null) gc.drawImage(image, p.getX()-70, p.getY()-70, 140, 140);
-        else {
-            gc.setStroke(Color.YELLOW); gc.setLineWidth(3);
-            gc.strokeOval(p.getX()-70, p.getY()-70, 140, 140);
-        }
+        gc.setStroke(Color.rgb(255, 255, 200, 0.5)); // สีเหลืองจางๆ
+        gc.setLineWidth(4);
+        gc.strokeOval(p.getX() - 70, p.getY() - 70, 140, 140);
+        // ลบบรรทัดที่วาด image ออกเพื่อให้เหลือแค่วงแหวน
     }
 }

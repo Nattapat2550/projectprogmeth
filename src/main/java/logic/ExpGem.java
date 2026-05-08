@@ -11,10 +11,12 @@ public class ExpGem extends Entity {
         this.expValue = expValue;
     }
 
-    public int getExpValue() { return expValue; }
+    public int getExpValue() {
+        return expValue;
+    }
 
     @Override
-    public void update() {} // อยู่นิ่งๆ
+    public void update() {} // อยู่นิ่งๆ ไม่ต้องขยับ
 
     @Override
     public void draw(GraphicsContext gc) {
@@ -22,7 +24,7 @@ public class ExpGem extends Entity {
             gc.drawImage(image, x - 10, y - 10, 20, 20); // วาดรูปเพชร
         } else {
             gc.setFill(Color.AQUA);
-            gc.fillRect(x - 5, y - 5, 10, 10);
+            gc.fillRect(x - 5, y - 5, 10, 10); // ถ้าไม่มีรูปให้วาดสี่เหลี่ยมสีฟ้า
         }
     }
 }
